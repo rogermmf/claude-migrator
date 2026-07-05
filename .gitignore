@@ -1,0 +1,7 @@
+/dist/
+*.exe
+*.zip
+*.tar.gz
+*.app/
+last_scan_debug.json
+.DS_Store
