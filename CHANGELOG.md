@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.29.3
+- Corrected The Finessed Hub link (finessedhub.com).
+
 ## 3.29.2
 - Added a "Report a bug" link in the app header and GitHub issue forms (bug report / feature request), so polishing is one click away.
 

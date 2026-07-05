@@ -9,7 +9,7 @@ folders your projects point to all come back and reconnect, with file paths
 translated across operating systems.
 
 *Open source — for Claude. Built by Roger Martinez. Powered by
-[Unicornus.ai](https://unicornus.ai) and [The Finessed Hub](https://thefinessedhub.com).*
+[Unicornus.ai](https://unicornus.ai) and [The Finessed Hub](https://finessedhub.com).*
 
 ![Claude Migrator — the export screen](docs/screenshot.png)
 
@@ -98,7 +98,7 @@ any personal folder names first. There is also a **Report a bug** link inside th
 ## Support
 
 Claude Migrator is free and MIT-licensed, built by [Roger Martinez](https://github.com/rogermmf)
-([Unicornus.ai](https://unicornus.ai) · [The Finessed Hub](https://thefinessedhub.com)).
+([Unicornus.ai](https://unicornus.ai) · [The Finessed Hub](https://finessedhub.com)).
 If it saved your migration, you can support development via the **Sponsor** button above. ☕
 
 ## License

@@ -289,7 +289,7 @@ textarea{width:100%;height:62px;background:#15171a;color:#e6e6e6;border:1px soli
   <div class="cred">Powered by:</div>
   <div class="hlogos">
    <a href="https://unicornus.ai" target="_blank" rel="noopener" title="Unicornus.ai"><img class="ic" src="/assets/unicornus.png" alt="Unicornus.ai"></a>
-   <a href="https://thefinessedhub.com" target="_blank" rel="noopener" title="The Finessed Hub"><img src="/assets/finessed.png" alt="The Finessed Hub"></a>
+   <a href="https://finessedhub.com" target="_blank" rel="noopener" title="The Finessed Hub"><img src="/assets/finessed.png" alt="The Finessed Hub"></a>
   </div>
  </div>
  </div>
