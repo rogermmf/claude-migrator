@@ -247,6 +247,16 @@ func importPkg(pkgDir, mainDest, destOS, destHome, restoreTo, vaultBaseIn string
 					placements = append(placements, place{nm, mainDest, true})
 				} else {
 					nd := rewritePathString(esrc, orderTokens(tokens))
+					if norm(nd) == norm(esrc) && srcOS != destOS {
+						// The folder lived outside every known root (home/main/
+						// Claude), so cross-OS its original path is meaningless
+						// on this machine -- park it under <home>/ClaudeData/<name>
+						// and rewrite references to match.
+						nd = joinDest(joinDest(destHome, "ClaudeData"), nm)
+					}
+					if norm(nd) != norm(esrc) {
+						tokens = append(tokens, newToken("data:"+nm, esrc, srcOS, nd))
+					}
 					placements = append(placements, place{nm, nd, false})
 				}
 			}

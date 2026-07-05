@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.29.1
+- Fixed cross-OS import of connected folders that live outside your home folder: they are now placed under `<home>/ClaudeData/<name>` on the new machine (their original path doesn't exist there) and all project references are rewritten to match. Caught by the first public CI run.
+
 ## 3.29.0
 - **Connector isolation (fixes cross-machine mixing):** browser/connector pairings (`ChromeNativeHost`, `buddy-tokens.json`) are machine-bound and are now excluded from export and never restored on import -- previously the new machine could keep driving the OLD computer's Chrome through stale pairings. The export records a `connectors.json` list instead, and after import (and in Preview) a popup shows exactly which connectors to reconnect on the new machine.
 - Backup zips now have a human name: `ClaudeBackup_YY-MM-DD_HH-MM-SS.zip` (was `ClaudeMigration_<hostname>_<stamp>.zip`).

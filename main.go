@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 )
 
-const VERSION = "3.29.0"
+const VERSION = "3.29.1"
 
 const TOOL = "Finessed Claude Migrator"
 

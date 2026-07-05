@@ -3,16 +3,16 @@
     "APP": {"0000": ["icon.png"]}
   },
   "RT_MANIFEST": {
-    "#1": {"0409": {"identity": {"name": "ClaudeMigrator", "version": "3.29.0.0"}, "description": "Claude Migrator", "execution-level": "as invoker"}}
+    "#1": {"0409": {"identity": {"name": "ClaudeMigrator", "version": "3.29.1.0"}, "description": "Claude Migrator", "execution-level": "as invoker"}}
   },
   "RT_VERSION": {
     "#1": {"0000": {
-      "fixed": {"file_version": "3.29.0.0", "product_version": "3.29.0.0"},
+      "fixed": {"file_version": "3.29.1.0", "product_version": "3.29.1.0"},
       "info": {"0409": {
         "CompanyName": "Unicornus.ai / The Finessed Hub",
         "FileDescription": "Claude Migrator - back up and move your Claude setup between computers",
-        "FileVersion": "3.29.0",
-        "ProductVersion": "3.29.0",
+        "FileVersion": "3.29.1",
+        "ProductVersion": "3.29.1",
         "InternalName": "ClaudeMigrator",
         "OriginalFilename": "ClaudeMigrator.exe",
         "ProductName": "Finessed Claude Migrator",
