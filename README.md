@@ -89,6 +89,12 @@ the first few times ("More info" → "Run anyway"). It carries full version
 metadata and is open source — if in doubt, build it yourself (`go build .`) or
 scan the release on VirusTotal. Code signing is planned; see docs/RELEASING.md.
 
+## Found a bug?
+
+[Open an issue](https://github.com/rogermmf/claude-migrator/issues/new/choose) — the
+form takes a minute. Paste the log from the app's black box if you have it; blank out
+any personal folder names first. There is also a **Report a bug** link inside the app.
+
 ## Support
 
 Claude Migrator is free and MIT-licensed, built by [Roger Martinez](https://github.com/rogermmf)

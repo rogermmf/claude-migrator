@@ -1,0 +1,15 @@
+name: Feature request
+description: An idea to make Claude Migrator better.
+title: "[Idea] "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like it to do?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why would this help you?

@@ -1,0 +1,47 @@
+name: Bug report
+description: Something didn't work — tell us and we'll fix it.
+title: "[Bug] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for helping polish Claude Migrator! A few quick questions.
+  - type: input
+    id: version
+    attributes:
+      label: Migrator version
+      description: Shown under the title in the app (e.g. v3.29.1).
+      placeholder: v3.29.1
+    validations:
+      required: true
+  - type: dropdown
+    id: direction
+    attributes:
+      label: What were you doing?
+      options:
+        - Export (backing up)
+        - Import — Windows to Mac
+        - Import — Mac to Windows
+        - Import — same system (Win to Win / Mac to Mac)
+        - Preview (dry run)
+        - Other / just opening the app
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Log output
+      description: Paste the text from the black log box in the app, if any. Feel free to blank out personal folder names.
+      render: text
+  - type: input
+    id: systems
+    attributes:
+      label: Old and new computer
+      placeholder: e.g. Windows 11 -> macOS Sequoia (M2)

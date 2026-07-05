@@ -283,7 +283,7 @@ textarea{width:100%;height:62px;background:#15171a;color:#e6e6e6;border:1px soli
   <div class="sub">Move Claude between computers (Windows and Mac). One file, no setup.</div>
   <div class="cred">Open source &mdash; for Claude</div>
   <div class="cred">built by: Roger Martinez</div>
-  <div class="cred"><a href="https://github.com/rogermmf" target="_blank" rel="noopener" style="color:#9aa0a6;text-decoration:none">github.com/rogermmf</a></div>
+  <div class="cred"><a href="https://github.com/rogermmf" target="_blank" rel="noopener" style="color:#9aa0a6;text-decoration:none">github.com/rogermmf</a> &middot; <a href="https://github.com/rogermmf/claude-migrator/issues/new/choose" target="_blank" rel="noopener" style="color:#9aa0a6;text-decoration:none">Report a bug</a></div>
  </div>
  <div class="powered">
   <div class="cred">Powered by:</div>

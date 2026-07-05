@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.29.2
+- Added a "Report a bug" link in the app header and GitHub issue forms (bug report / feature request), so polishing is one click away.
+
 ## 3.29.1
 - Fixed cross-OS import of connected folders that live outside your home folder: they are now placed under `<home>/ClaudeData/<name>` on the new machine (their original path doesn't exist there) and all project references are rewritten to match. Caught by the first public CI run.
 
