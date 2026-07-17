@@ -27,13 +27,14 @@ var excludeDirs = map[string]bool{
 	"logs": true, "Log": true, "Local Storage": true, "Session Storage": true, "IndexedDB": true,
 	"Network": true, "Partitions": true, "component_crx_cache": true, "extensions_crx_cache": true,
 	"node_modules": true, ".git": true, ".bin": true, "vm_bundles": true,
+	"claude-code-vm": true, "pending-uploads": true, "sentry": true, "fcache": true,
 	"file-history": true, "debug": true, "telemetry": true, "statsig": true, "ide": true, "tasks": true,
 	// machine-bound browser/connector pairing -- never travels (prevents the new
 	// machine driving the OLD computer's Chrome through stale pairings)
 	"ChromeNativeHost": true,
 }
 
-var excludeGlobs = []string{"buddy-tokens.json", "*.lock", "LOCK", "*.ldb", "*.log", "*.tmp", "*.old", ".DS_Store",
+var excludeGlobs = []string{"buddy-tokens.json", "ant-device-registry.json", "ant-did", "window-state.json", "cowork-clientdata-cache.json", "cowork-gb-cache.json", "cowork-policy-limits-cache.json", "*.lock", "LOCK", "*.ldb", "*.log", "*.tmp", "*.old", ".DS_Store",
 	"Thumbs.db", "Singleton*", "*.sock", "lockfile", ".credentials.json", "*.credentials.json",
 	".audit-key", "*.audit-key", "history.jsonl"}
 
@@ -122,6 +123,13 @@ func export(cowork, claudeCode, ccjson, mainPath, mainLabel, outDir, name, sourc
 			progTot += countTree(src, dataExcludeDirs, dataExcludeGlobs)
 		}
 	}
+	ufp := ""
+	if cfg := readJSON(filepath.Join(cowork, "claude_desktop_config.json")); cfg != nil {
+		ufp, _ = cfg["coworkUserFilesPath"].(string)
+	}
+	if isDir(ufp) {
+		progTot += countTree(ufp, dataExcludeDirs, dataExcludeGlobs)
+	}
 	defer func() { progCb = nil }()
 	roots := map[string]interface{}{}
 	if isDir(cowork) {
@@ -130,6 +138,11 @@ func export(cowork, claudeCode, ccjson, mainPath, mainLabel, outDir, name, sourc
 		logln(cb, "  [Core] Cowork: %d files, %.1f MB", fl, float64(b)/1e6)
 	} else {
 		roots["cowork"] = map[string]interface{}{"present": false, "source_path": cowork}
+	}
+	if isDir(ufp) {
+		fl, b := zipAddTree(zw, ufp, "01_Claude_Core/claude_user_files", dataExcludeDirs, dataExcludeGlobs)
+		roots["user_files"] = map[string]interface{}{"present": true, "source_path": ufp, "files": fl, "bytes": b}
+		logln(cb, "  [Core] User files (artifacts + scheduled tasks): %d files, %.1f MB", fl, float64(b)/1e6)
 	}
 	if isDir(claudeCode) {
 		fl, _ := zipAddTree(zw, claudeCode, "01_Claude_Core/claude_code", excludeDirs, excludeGlobs)

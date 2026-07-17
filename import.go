@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-var coworkMergeSkip = map[string]bool{"ChromeNativeHost": true, "buddy-tokens.json": true, "config.json": true, "Local Storage": true, "IndexedDB": true, "Session Storage": true, "Network": true, "Cookies": true, "Cookies-journal": true, "Cache": true, "Code Cache": true, "GPUCache": true, "DawnCache": true, "DawnGraphiteCache": true, "DawnWebGPUCache": true, "ShaderCache": true, "GrShaderCache": true, "blob_storage": true, "Service Worker": true, "Crashpad": true, "vm_bundles": true, ".credentials.json": true, ".audit-key": true, "Trust Tokens": true, "Trust Tokens-journal": true, "Network Persistent State": true}
+var coworkMergeSkip = map[string]bool{"ChromeNativeHost": true, "buddy-tokens.json": true, "ant-device-registry.json": true, "ant-did": true, "window-state.json": true, "sentry": true, "fcache": true, "pending-uploads": true, "claude-code-vm": true, "config.json": true, "Local Storage": true, "IndexedDB": true, "Session Storage": true, "Network": true, "Cookies": true, "Cookies-journal": true, "Cache": true, "Code Cache": true, "GPUCache": true, "DawnCache": true, "DawnGraphiteCache": true, "DawnWebGPUCache": true, "ShaderCache": true, "GrShaderCache": true, "blob_storage": true, "Service Worker": true, "Crashpad": true, "vm_bundles": true, ".credentials.json": true, ".audit-key": true, "Trust Tokens": true, "Trust Tokens-journal": true, "Network Persistent State": true}
 
 func mergeClaudeJSON(staged, live string, tokens []*Token, cb func(string)) {
 	s := readRaw(staged)
@@ -262,6 +262,21 @@ func importPkg(pkgDir, mainDest, destOS, destHome, restoreTo, vaultBaseIn string
 			}
 		}
 	}
+	ufDest := ""
+	if sc := filepath.Join(core, "claude_user_files"); isDir(sc) {
+		ufSrc := getsrc("user_files")
+		if ufSrc != "" {
+			ufDest = rewritePathString(ufSrc, orderTokens(tokens))
+			if norm(ufDest) == norm(ufSrc) && srcOS != destOS {
+				ufDest = joinDest(joinDest(destHome, "Documents"), "Claude")
+			}
+			if norm(ufDest) != norm(ufSrc) {
+				tokens = append(tokens, newToken("userfiles", ufSrc, srcOS, ufDest))
+			}
+		} else {
+			ufDest = joinDest(joinDest(destHome, "Documents"), "Claude")
+		}
+	}
 	tokens = orderTokens(tokens)
 
 	if dryRun {
@@ -303,6 +318,9 @@ func importPkg(pkgDir, mainDest, destOS, destHome, restoreTo, vaultBaseIn string
 			}
 			logln(cb, "  Would place data folder %s -> %s%s", pl.name, pl.dest, st)
 		}
+		if sc := filepath.Join(core, "claude_user_files"); isDir(sc) {
+			logln(cb, "  Would restore user files (artifacts + scheduled tasks): %d file(s) -> %s", countTree(sc, map[string]bool{}, []string{}), ufDest)
+		}
 		if cb != nil {
 			cb("@@P@@100")
 		}
@@ -327,6 +345,10 @@ func importPkg(pkgDir, mainDest, destOS, destHome, restoreTo, vaultBaseIn string
 			copyTree(sc, physCowork, map[string]bool{"ChromeNativeHost": true}, []string{"buddy-tokens.json"})
 			rewriteTree(physCowork, tokens)
 		}
+	}
+	if sc := filepath.Join(core, "claude_user_files"); isDir(sc) && ufDest != "" {
+		logln(cb, "  Restoring user files (artifacts + scheduled tasks) -> %s", ufDest)
+		mergeTreeRewrite(sc, phys(ufDest, "user_files"), tokens)
 	}
 	if cb != nil {
 		cb("@@P@@80")

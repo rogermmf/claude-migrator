@@ -45,7 +45,7 @@ func selftest() int {
 	extra := filepath.Join(work, "ExtraData")
 	os.MkdirAll(extra, 0755)
 	os.WriteFile(filepath.Join(extra, "data.txt"), []byte("x"), 0644)
-	os.WriteFile(filepath.Join(cowork, "claude_desktop_config.json"), []byte("{\"connectedFolders\":[\""+mainD+"\",\""+extra+"\"],\"mcpServers\":{\"github\":{},\"gmail\":{}}}"), 0644)
+	os.WriteFile(filepath.Join(cowork, "claude_desktop_config.json"), []byte("{\"connectedFolders\":[\""+mainD+"\",\""+extra+"\"],\"mcpServers\":{\"github\":{},\"gmail\":{}},\"coworkUserFilesPath\":\""+ns2j(filepath.Join(work, "UserFiles"))+"\"}"), 0644)
 	os.MkdirAll(filepath.Join(cowork, "ChromeNativeHost"), 0755)
 	os.WriteFile(filepath.Join(cowork, "ChromeNativeHost", "pair.json"), []byte("{\"host\":\"old-pc\"}"), 0644)
 	os.WriteFile(filepath.Join(cowork, "buddy-tokens.json"), []byte("{\"tok\":\"x\"}"), 0644)
@@ -62,7 +62,21 @@ func selftest() int {
 	os.MkdirAll(pd, 0755)
 	os.WriteFile(filepath.Join(pd, "cli-sess-1.jsonl"), []byte("{\"cwd\":\""+sessOut+"\"}\n"), 0644)
 	os.WriteFile(filepath.Join(sessDir, "ref.json"), []byte("{\"proj\":\""+mungeCC(sessOut)+"\"}"), 0644)
-	os.WriteFile(sessDir+".json", []byte("{\"sessionId\":\"local_ab\",\"cliSessionId\":\"cli-sess-1\",\"cwd\":\""+sessOut+"\",\"title\":\"T\"}"), 0644)
+	os.WriteFile(sessDir+".json", []byte("{\"sessionId\":\"local_ab\",\"cliSessionId\":\"cli-sess-1\",\"cwd\":\""+sessOut+"\",\"title\":\"T\",\"spaceId\":\"sp1\",\"remoteMcpServersConfig\":[{\"uuid\":\"u1\",\"name\":\"Canva\"}]}"), 0644)
+	lam := filepath.Join(cowork, "local-agent-mode-sessions", "spaces")
+	os.WriteFile(filepath.Join(lam, "spaces.json"), []byte("{\"spaces\":[{\"id\":\"sp1\",\"name\":\"My Real Project\",\"folders\":[{\"path\":\""+ns2j(mainD)+"\"}]}]}"), 0644)
+	ufd := filepath.Join(work, "UserFiles")
+	os.MkdirAll(filepath.Join(ufd, "Scheduled", "mytask"), 0755)
+	os.WriteFile(filepath.Join(ufd, "Scheduled", "mytask", "SKILL.md"), []byte("---\nname: My Task\n---\nrun daily\n"), 0644)
+	os.WriteFile(filepath.Join(lam, "scheduled-tasks.json"), []byte("{\"scheduledTasks\":[{\"id\":\"t1\",\"filePath\":\""+ns2j(filepath.Join(ufd, "Scheduled", "mytask", "SKILL.md"))+"\"}]}"), 0644)
+	os.WriteFile(filepath.Join(lam, "cowork-gb-cache.json"), []byte("{}"), 0644)
+	os.MkdirAll(filepath.Join(cowork, "claude-code-vm"), 0755)
+	os.WriteFile(filepath.Join(cowork, "claude-code-vm", "vm.img"), []byte("x"), 0644)
+	os.MkdirAll(filepath.Join(cowork, "pending-uploads"), 0755)
+	os.WriteFile(filepath.Join(cowork, "pending-uploads", "u.bin"), []byte("x"), 0644)
+	os.WriteFile(filepath.Join(cowork, "ant-device-registry.json"), []byte("{}"), 0644)
+	os.WriteFile(filepath.Join(cowork, "ant-did"), []byte("x"), 0644)
+	os.WriteFile(filepath.Join(cowork, "window-state.json"), []byte("{}"), 0644)
 
 	out := filepath.Join(work, "out")
 	curOS := "darwin"
@@ -75,6 +89,23 @@ func selftest() int {
 	ents := zipEntries(pkg)
 	check("soul cowork present", ents["01_Claude_Core/cowork/claude_desktop_config.json"])
 	check("connectors recorded in package", ents["01_Claude_Core/connectors.json"])
+	check("user files exported (scheduled tasks travel)", ents["01_Claude_Core/claude_user_files/Scheduled/mytask/SKILL.md"])
+	check("new host-locked/bloat excluded", !ents["01_Claude_Core/cowork/claude-code-vm/vm.img"] && !ents["01_Claude_Core/cowork/pending-uploads/u.bin"] && !ents["01_Claude_Core/cowork/ant-device-registry.json"] && !ents["01_Claude_Core/cowork/ant-did"] && !ents["01_Claude_Core/cowork/window-state.json"] && !ents["01_Claude_Core/cowork/local-agent-mode-sessions/spaces/cowork-gb-cache.json"])
+	conns := enumerateConnections(cowork, "", "", false)
+	gotName := false
+	for _, c := range conns {
+		if c.Name == "My Real Project" {
+			gotName = true
+		}
+	}
+	check("project labeled with real spaces.json name", gotName)
+	gotCanva := false
+	for _, c := range enumerateConnectors(cowork, "", "") {
+		if c == "Canva" {
+			gotCanva = true
+		}
+	}
+	check("connector found in session remoteMcpServersConfig", gotCanva)
 	check("chrome pairing excluded from export", !ents["01_Claude_Core/cowork/ChromeNativeHost/pair.json"] && !ents["01_Claude_Core/cowork/buddy-tokens.json"])
 	check("Cache excluded", !anyPrefix(ents, "01_Claude_Core/cowork/Cache/"))
 	check("vm_bundles excluded", !anyPrefix(ents, "01_Claude_Core/cowork/vm_bundles/"))
@@ -110,6 +141,11 @@ func selftest() int {
 	check("verify report: conversation resumable 1/1", strings.Contains(strings.Join(impMsgs, "\n"), "conversations resumable: 1/1"))
 	check("connector reconnect popup emitted", strings.Contains(strings.Join(impMsgs, "\n"), "@@POP@@") && strings.Contains(strings.Join(impMsgs, "\n"), "github"))
 	check("chrome pairing not restored", !exists(filepath.Join(rto, "cowork", "ChromeNativeHost")) && !exists(filepath.Join(rto, "cowork", "buddy-tokens.json")))
+	check("user files restored", isFile(filepath.Join(rto, "user_files", "Scheduled", "mytask", "SKILL.md")))
+	schedRaw := ns(readRaw(filepath.Join(rto, "cowork", "local-agent-mode-sessions", "spaces", "scheduled-tasks.json")))
+	check("scheduled task path rewritten to new machine", strings.Contains(schedRaw, "C:/Users/Bob") && !strings.Contains(schedRaw, ns(filepath.Join(work, "UserFiles"))))
+	spacesRaw := ns(readRaw(filepath.Join(rto, "cowork", "local-agent-mode-sessions", "spaces", "spaces.json")))
+	check("spaces.json folder path rewritten", strings.Contains(spacesRaw, ns(newMain)) && !strings.Contains(spacesRaw, ns(mainD)))
 
 	rtoDry := filepath.Join(work, "restoredDry")
 	dryMsgs := []string{}
@@ -147,3 +183,6 @@ func selftest() int {
 	}
 	return 0
 }
+
+// ns2j embeds a path in a JSON string literal (escapes backslashes).
+func ns2j(p string) string { return strings.ReplaceAll(p, "\\", "\\\\") }

@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.30.0
+- **Updated for the July 2026 Claude Desktop "unified Spaces" release** (verified against a live install):
+  - **Real project names**: Claude now stores the space registry on disk (`spaces.json`) -- the Migrator reads it, so scans, reports, and the package inventory finally show your actual project names instead of folder-based labels.
+  - **Scheduled tasks & artifacts now migrate**: Claude keeps them in a user-files folder outside its data dir (`coworkUserFilesPath`, e.g. `~/Documents/Claude`). The Migrator now backs that folder up, restores it, and rewrites the scheduled-task paths so tasks keep running on the new machine.
+  - **Connector list** for the reconnect popup now also reads per-session `remoteMcpServersConfig` (the new home of Cowork connectors).
+  - **New excludes**: `claude-code-vm` (~245 MB VM runtime), `pending-uploads`, `sentry`, `fcache`, `window-state.json`, per-workspace `cowork-*-cache.json`, and the device-identity files `ant-device-registry.json` / `ant-did` (host-locked, credential-like -- must never travel).
+  - Resume mechanism unchanged and re-verified: end-to-end test on a real install imported 5/5 conversations resumable, with space names, scheduled tasks, and connector detection all intact.
+
 ## 3.29.3
 - Corrected The Finessed Hub link (finessedhub.com).
 

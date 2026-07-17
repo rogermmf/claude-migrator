@@ -222,6 +222,53 @@ func projectNames(coworkRoot string) map[string]string {
 	return res
 }
 
+// spaceRegistry reads every spaces.json under local-agent-mode-sessions
+// (new Claude Desktop layout, July 2026): the on-disk registry of space
+// display names + connected folders, keyed by spaceId.
+func spaceRegistry(coworkRoot string) (map[string]string, map[string][]string) {
+	names := map[string]string{}
+	folders := map[string][]string{}
+	if coworkRoot == "" {
+		return names, folders
+	}
+	filepath.WalkDir(filepath.Join(coworkRoot, "local-agent-mode-sessions"), func(p string, d os.DirEntry, err error) error {
+		if err != nil || d.IsDir() || d.Name() != "spaces.json" {
+			return nil
+		}
+		m := readJSON(p)
+		if m == nil {
+			return nil
+		}
+		arr, _ := m["spaces"].([]interface{})
+		for _, x := range arr {
+			sm, _ := x.(map[string]interface{})
+			if sm == nil {
+				continue
+			}
+			id, _ := sm["id"].(string)
+			if id == "" {
+				continue
+			}
+			if nm, _ := sm["name"].(string); nm != "" {
+				names[id] = nm
+			}
+			if fl, _ := sm["folders"].([]interface{}); fl != nil {
+				for _, f := range fl {
+					fm, _ := f.(map[string]interface{})
+					if fm == nil {
+						continue
+					}
+					if ps, _ := fm["path"].(string); ps != "" {
+						folders[id] = append(folders[id], ps)
+					}
+				}
+			}
+		}
+		return nil
+	})
+	return names, folders
+}
+
 func enumerateConnections(coworkRoot, ccRoot, ccjson string, withSize bool) []connProject {
 	out := []connProject{}
 	names := projectNames(coworkRoot)
@@ -267,6 +314,26 @@ func enumerateConnections(coworkRoot, ccRoot, ccjson string, withSize bool) []co
 			return nil
 		})
 	}
+	regNames, regFolders := spaceRegistry(coworkRoot)
+	for sid, fls := range regFolders {
+		g := spaces[sid]
+		if g == nil {
+			g = &sp{folders: map[string]bool{}}
+			spaces[sid] = g
+			order = append(order, sid)
+		}
+		for _, f := range fls {
+			if f != "" && !isAppish(f) {
+				g.folders[f] = true
+			}
+		}
+	}
+	for sid := range regNames {
+		if spaces[sid] == nil {
+			spaces[sid] = &sp{folders: map[string]bool{}}
+			order = append(order, sid)
+		}
+	}
 	for _, sid := range order {
 		g := spaces[sid]
 		name := "Cowork project"
@@ -281,6 +348,9 @@ func enumerateConnections(coworkRoot, ccRoot, ccjson string, withSize bool) []co
 		}
 		if n, ok := names[sid]; ok && n != "" {
 			name = n
+		}
+		if rn, ok := regNames[sid]; ok && rn != "" {
+			name = rn // spaces.json is the authoritative display name
 		}
 		fs := []connFolder{}
 		for f := range g.folders {
@@ -355,6 +425,29 @@ func enumerateConnectors(coworkRoot, ccRoot, ccjson string) []string {
 	addMcp(readJSON(ccjson))
 	if ccRoot != "" {
 		addMcp(readJSON(filepath.Join(ccRoot, "settings.json")))
+	}
+	// New layout (Jul 2026): Cowork connectors live per-session in
+	// remoteMcpServersConfig, not in claude_desktop_config.json.
+	if coworkRoot != "" {
+		filepath.WalkDir(filepath.Join(coworkRoot, "local-agent-mode-sessions"), func(p string, d os.DirEntry, err error) error {
+			if err != nil || d.IsDir() || !strings.HasPrefix(d.Name(), "local_") || !strings.HasSuffix(d.Name(), ".json") {
+				return nil
+			}
+			m := readJSON(p)
+			if m == nil {
+				return nil
+			}
+			if arr, _ := m["remoteMcpServersConfig"].([]interface{}); arr != nil {
+				for _, x := range arr {
+					if mm, _ := x.(map[string]interface{}); mm != nil {
+						if nm, _ := mm["name"].(string); nm != "" {
+							set[nm] = true
+						}
+					}
+				}
+			}
+			return nil
+		})
 	}
 	out := []string{}
 	for k := range set {
